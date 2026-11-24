@@ -53,10 +53,5 @@ workers.forEach(worker => {
     );
 });
 
-// Кто отработал больше всех?
-console.log('--- Больше всех отработал ---');
-Worker.whoWorkedMore(...workers);
 
-// Кто самый младший?
-console.log('--- Самый младший работник ---');
-Worker.whoIsYounger(...workers);
+Worker.whoWorkedMoreAndWhoIsYounger(...workers);

@@ -1,5 +1,5 @@
 
-import Person from './person.js';
+import Person from "./person.js";
 
 export default class Worker extends Person {
     #rate = 1000;
@@ -7,7 +7,6 @@ export default class Worker extends Person {
 
     constructor(firstName, lastName, birthday, position) {
         super(firstName, lastName, birthday);
-
         this.position = position;
     }
 
@@ -16,10 +15,12 @@ export default class Worker extends Person {
     }
 
     set rate(value) {
-        if (typeof value === 'number' && value >= 1000) {
+        if (Number.isFinite(value) && value >= 1000) {
             this.#rate = value;
         } else {
-            console.error('Ошибка! Ставка не может быть меньше 1000 рублей.');
+            console.error(
+                "Ошибка! Ставка должна быть числом не меньше 1000 рублей."
+            );
         }
     }
 
@@ -30,8 +31,10 @@ export default class Worker extends Person {
             0
         ).getDate();
 
-        if (typeof days !== 'number' || days <= 0) {
-            console.error('Количество дней должно быть больше 0.');
+        if (!Number.isInteger(days) || days <= 0) {
+            console.error(
+                "Количество дней должно быть положительным целым числом."
+            );
             return;
         }
 
@@ -48,75 +51,58 @@ export default class Worker extends Person {
     getSalary() {
         let salary = this.#rate * this.#days;
 
-        const birthdayMonth = Number(this.birthday.split('-')[0]);
+        const birthdayMonth = Number(this.birthday.split("-")[0]);
         const currentMonth = new Date().getMonth() + 1;
 
         if (birthdayMonth === currentMonth) {
             salary += salary * 0.1;
         }
 
-        return salary;
+        return Number.isFinite(salary) ? salary : 0;
     }
 
-    static whoWorkedMore(...workers) {
+    static whoWorkedMoreAndWhoIsYounger(...workers) {
         if (workers.length === 0) {
-            console.log('Список работников пуст.');
+            console.log("Список работников пуст.");
             return;
         }
 
-        const maxDays = Math.max(...workers.map(worker => worker.#days));
+        let maxDays = -1;
+        let youngestAge = Infinity;
 
-        const hardestWorkers = workers.filter(
-            worker => worker.#days === maxDays
-        );
+        const hardestWorkers = [];
+        const youngestWorkers = [];
+
+        for (const worker of workers) {
+            if (worker.#days > maxDays) {
+                maxDays = worker.#days;
+                hardestWorkers.length = 0;
+                hardestWorkers.push(worker);
+            } else if (worker.#days === maxDays) {
+                hardestWorkers.push(worker);
+            }
+
+            const age = Number(worker.getAge().split(" ")[0]);
+
+            if (age < youngestAge) {
+                youngestAge = age;
+                youngestWorkers.length = 0;
+                youngestWorkers.push(worker);
+            } else if (age === youngestAge) {
+                youngestWorkers.push(worker);
+            }
+        }
 
         hardestWorkers.forEach(worker => {
             console.log(
                 `Больше всех отработал ${worker.getFullName()}. Количество рабочих дней - ${worker.#days}`
             );
         });
-    }
 
-    static whoIsYounger(...workers) {
-        if (workers.length === 0) {
-            console.log('Список работников пуст.');
-            return;
-        }
-
-        const youngestAge = Math.min(
-            ...workers.map(worker => {
-                const [month, day, year] = worker.birthday.split('-').map(Number);
-
-                const today = new Date();
-                let age = today.getFullYear() - year;
-
-                if (
-                    today.getMonth() + 1 < month ||
-                    (today.getMonth() + 1 === month && today.getDate() < day)
-                ) {
-                    age--;
-                }
-
-                return age;
-            })
-        );
-
-        workers.forEach(worker => {
-            const [month, day, year] = worker.birthday.split('-').map(Number);
-
-            const today = new Date();
-            let age = today.getFullYear() - year;
-
-            if (
-                today.getMonth() + 1 < month ||
-                (today.getMonth() + 1 === month && today.getDate() < day)
-            ) {
-                age--;
-            }
-
-            if (age === youngestAge) {
-                console.log(`${worker.getFullName()} ${worker.getAge()}`);
-            }
+        youngestWorkers.forEach(worker => {
+            console.log(
+                `${worker.getFullName()} ${worker.getAge()}`
+            );
         });
     }
 }
